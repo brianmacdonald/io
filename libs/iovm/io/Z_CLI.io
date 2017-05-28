@@ -1,5 +1,6 @@
 Locals removeSlot("doFile")
 
+
 DummyLine := File standardInput do(
     readLine := method(prompt,
         if(prompt, prompt print)
@@ -8,8 +9,9 @@ DummyLine := File standardInput do(
 )
 
 CLI := Object clone do(
-    prompt ::= "Io> "
-    outPrompt ::= "==> "
+    index := 1
+    prompt ::= method("xaed [" .. self index  .. "]> ")
+    outPrompt ::= method("[" .. self index  .. "] ==> ")
     continuedLinePrompt ::= "... "
 
     isRunning ::= true # Get rid of this ...
@@ -68,8 +70,8 @@ CLI := Object clone do(
         # Execute the line and report any exceptions which happened.
         executionError := try(result := context doMessage(lineAsMessage))
         if(executionError,
-            executionError showStack
-        ,
+            executionError showStack,
+
             # Write out the command's result to stdout; nothing is written
             # if the CLI is terminated, this condition is satisfied, only
             # when CLI exit() was called.
@@ -106,7 +108,7 @@ CLI := Object clone do(
     writeWelcomeBanner := method("Io #{System version}" interpolate println)
     writeCommandResult := method(result,
         outPrompt print
-
+	self index := self index + 1
         if(exc := try(getSlot("result") asString println),
             "<exception while dislaying result>" println
             exc showStack
@@ -152,7 +154,6 @@ CLI := Object clone do(
     )
 
     interactive := method(
-        # Start with the default prompt. The prompt is changed for continued lines,
         # and errors.
         prompt := self prompt
         line := ""
@@ -186,7 +187,6 @@ CLI := Object clone do(
             ,
                 doLine(lineAsMessage)
             )
-
             lineReader ?addHistory(line)
             return if(isRunning, interactive, nil)
         )
