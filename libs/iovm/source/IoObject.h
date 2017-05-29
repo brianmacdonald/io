@@ -104,6 +104,8 @@ IOVM_API void IoObject_show(IoObject *self);
 // proto
 
 IOVM_API IO_METHOD(IoObject, clone);
+IOVM_API IO_METHOD(IoObject, cloneFreeze);
+IOVM_API IO_METHOD(IoObject, safeClone);
 IOVM_API IO_METHOD(IoObject, cloneWithoutInit);
 IOVM_API IO_METHOD(IoObject, shallowCopy);
 IOVM_API IoObject *IoObject_initClone_(IoObject *self, IoObject *locals, IoMessage *m, IoObject *newObject);

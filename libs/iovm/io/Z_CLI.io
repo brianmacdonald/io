@@ -94,7 +94,7 @@ CLI := Object clone do(
     )
 
     ioHistoryFile := lazySlot(
-        Path with(System getEnvironmentVariable("HOME"), ".io_history")
+        Path with(System getEnvironmentVariable("HOME"), ".xaed_history")
     )
 
     saveHistory := method(lineReader ?saveHistory(ioHistoryFile))
@@ -105,7 +105,7 @@ CLI := Object clone do(
     )
 
 
-    writeWelcomeBanner := method("Io #{System version}" interpolate println)
+    writeWelcomeBanner := method("xaed #{System version}" interpolate println)
     writeCommandResult := method(result,
         outPrompt print
 	self index := self index + 1
@@ -145,6 +145,9 @@ CLI := Object clone do(
         # Is this still needed? Not used anywhere in the source.
         if(File clone setPath("main.io") exists,
             doFile("main.io")
+        )
+        if(File clone setPath("main.xaed") exists,
+            doFile("main.xaed")
         )
 
         loadHistory

@@ -111,6 +111,8 @@ IoObject *IoObject_protoFinish(void *state)
 {
 	IoMethodTable methodTable[] = {
 	{"clone", IoObject_clone},
+	{"cloneFreeze", IoObject_cloneFreeze},
+	{"safeClone", IoObject_safeClone},
 	{"cloneWithoutInit", IoObject_cloneWithoutInit},
 	{"shallowCopy", IoObject_shallowCopy},
 	{"write", IoObject_protoWrite},
@@ -351,14 +353,21 @@ IoObject *IoObject_rawClone(IoObject *proto)
 {
 	IoObject *self = IoObject_alloc(proto);
 	IoObject_tag_(self, IoObject_tag(proto));
+	IoObject_setProtoTo_(self, proto);
+	IoObject_isActivatable_(self, IoObject_isActivatable(proto));
+
+	/*if (self->isImmutable) {
+		IoMessage *m = IoMessage_new(IOSTATE);
+		IOASSERT(0, "perform requires a Symbol or Message argument");
+		printf("immutable");
+	}
+	*/
 	/*
 	{
 		IoObject **protos = IoObject_protos(self);
 		protos[0] = proto;
 	}
 	*/
-	IoObject_setProtoTo_(self, proto);
-	IoObject_isActivatable_(self, IoObject_isActivatable(proto));
 
 	//IoObject_protos(self)[0] = proto;
 	//IoObject_setDataPointer_(self, IoObject_dataPointer(proto)); // is this right?
@@ -1061,9 +1070,37 @@ IO_METHOD(IoObject, clone)
 	/*doc Object clone
 	Returns a clone of the receiver.
 	*/
+	IoObject *newObject = IOCLONE(self);
+	//IOASSERT(0, "Object frozen");
+	return IoObject_initClone_(self, locals, m, newObject);
+}
+
+IO_METHOD(IoObject, cloneFreeze)
+{
+	/*doc Object clone
+	Returns a clone of the receiver.
+	*/
 
 	IoObject *newObject = IOCLONE(self);
+	printf("clone freeze");
+	IoObject *clonedObject = IoObject_initClone_(self, locals, m, newObject);
+	IoObject_setImmutable(clonedObject);
+	return clonedObject;
+}
+
+
+IO_METHOD(IoObject, safeClone)
+{
+	/*doc Object shallowCopy
+	Returns a shallow copy of the receiver.
+	*/
+
+	IOASSERT(!(IoObject_isImmutable(self)), "Object is frozen.");
+
+	{
+	IoObject *newObject = IOCLONE(self);
 	return IoObject_initClone_(self, locals, m, newObject);
+	}
 }
 
 IO_METHOD(IoObject, cloneWithoutInit)

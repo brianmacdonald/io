@@ -49,6 +49,8 @@ struct IoObjectData
 	unsigned int isActivatable : 1;    // if true, upon activation, call activate slot
 	unsigned int isDirty : 1;          // set to true when the object changes its storable state
 
+        unsigned int isImmutable : 1;
+
 	// optimizations
 
 	unsigned int ownsSlots : 1;        // if true, io_free slots hash table when io_freeing object
@@ -72,6 +74,9 @@ struct IoObjectData
 #define IOSTATE ((IoState *)(IoObject_tag(self)->state))
 //#define IOSTATE IoObject_state(state)
 
+#define IoObject_isImmutable(self) (IoObject_deref(self)->isImmutable)
+
+#define IoObject_setImmutable(self) (IoObject_deref(self)->isImmutable = 1)
 
 
 #define IoObject_dataPointer(self)          IoObject_deref(self)->data.ptr
