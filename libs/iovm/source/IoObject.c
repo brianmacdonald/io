@@ -111,8 +111,6 @@ IoObject *IoObject_protoFinish(void *state)
 {
 	IoMethodTable methodTable[] = {
 	{"clone", IoObject_clone},
-	{"cloneFreeze", IoObject_cloneFreeze},
-	{"safeClone", IoObject_safeClone},
 	{"cloneWithoutInit", IoObject_cloneWithoutInit},
 	{"shallowCopy", IoObject_shallowCopy},
 	{"write", IoObject_protoWrite},
@@ -140,6 +138,7 @@ IoObject *IoObject_protoFinish(void *state)
 	{"setSlot", IoObject_protoSet_to_},
 	{"setSlotWithType", IoObject_protoSetSlotWithType},
 	{"updateSlot", IoObject_protoUpdateSlot_to_},
+	{"setImmutableSlot", IoObject_protoImmutableSlot_to_},
 	{"getSlot", IoObject_protoGetSlot_},
 	{"getLocalSlot", IoObject_protoGetLocalSlot_},
 	{"hasLocalSlot", IoObject_protoHasLocalSlot},
@@ -356,12 +355,6 @@ IoObject *IoObject_rawClone(IoObject *proto)
 	IoObject_setProtoTo_(self, proto);
 	IoObject_isActivatable_(self, IoObject_isActivatable(proto));
 
-	/*if (self->isImmutable) {
-		IoMessage *m = IoMessage_new(IOSTATE);
-		IOASSERT(0, "perform requires a Symbol or Message argument");
-		printf("immutable");
-	}
-	*/
 	/*
 	{
 		IoObject **protos = IoObject_protos(self);
@@ -1075,34 +1068,6 @@ IO_METHOD(IoObject, clone)
 	return IoObject_initClone_(self, locals, m, newObject);
 }
 
-IO_METHOD(IoObject, cloneFreeze)
-{
-	/*doc Object clone
-	Returns a clone of the receiver.
-	*/
-
-	IoObject *newObject = IOCLONE(self);
-	printf("clone freeze");
-	IoObject *clonedObject = IoObject_initClone_(self, locals, m, newObject);
-	IoObject_setImmutable(clonedObject);
-	return clonedObject;
-}
-
-
-IO_METHOD(IoObject, safeClone)
-{
-	/*doc Object shallowCopy
-	Returns a shallow copy of the receiver.
-	*/
-
-	IOASSERT(!(IoObject_isImmutable(self)), "Object is frozen.");
-
-	{
-	IoObject *newObject = IOCLONE(self);
-	return IoObject_initClone_(self, locals, m, newObject);
-	}
-}
-
 IO_METHOD(IoObject, cloneWithoutInit)
 {
 	/*doc Object cloneWithoutInit
@@ -1137,8 +1102,14 @@ IO_METHOD(IoObject, protoSet_to_)
 	*/
 
 	IoSymbol *slotName  = IoMessage_locals_symbolArgAt_(m, locals, 0);
+	if (IoObject_isImmutable(slotName))
+	{
+		IoState_error_(IOSTATE, m, "Slot %s is immutable and can not be modified.",
+					   CSTRING(slotName));
+	}
 	IoObject *slotValue = IoMessage_locals_valueArgAt_(m, locals, 1);
 	IoObject_inlineSetSlot_to_(self, slotName, slotValue);
+
 	return slotValue;
 }
 
@@ -1216,6 +1187,18 @@ IO_METHOD(IoObject, protoUpdateSlot_to_)
 					   CSTRING(slotName));
 	}
 
+	return slotValue;
+}
+
+IO_METHOD(IoObject, protoImmutableSlot_to_)
+{
+	/*doc Object setImmutableSlot(slotNameString, valueObject)
+	Same as setSlot(), but raises an error if the slot is set as Immutable.
+	*/
+	IoSymbol *slotName  = IoMessage_locals_symbolArgAt_(m, locals, 0);
+	IoObject *slotValue = IoMessage_locals_valueArgAt_(m, locals, 1);
+	IoObject_setImmutable(slotName);
+	IoObject_inlineSetSlot_to_(self, slotName, slotValue);
 	return slotValue;
 }
 

@@ -124,6 +124,7 @@ IOVM_API IO_METHOD(IoObject, protoSet_to_);
 IOVM_API IO_METHOD(IoObject, protoSetSlotWithType);
 IOVM_API IO_METHOD(IoObject, localsUpdateSlot);
 IOVM_API IO_METHOD(IoObject, protoUpdateSlot_to_);
+IOVM_API IO_METHOD(IoObject, protoImmutableSlot_to_);
 
 IOVM_API IO_METHOD(IoObject, protoGetSlot_);
 IOVM_API IO_METHOD(IoObject, protoGetLocalSlot_);

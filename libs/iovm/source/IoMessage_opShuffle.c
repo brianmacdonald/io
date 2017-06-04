@@ -90,6 +90,7 @@ IoMap *IoState_createAssignOperatorTable(IoState *state)
 
 	IoMap_rawAtPut(self, IOSYMBOL(":="), IOSYMBOL("setSlot"));
 	IoMap_rawAtPut(self, IOSYMBOL("="), IOSYMBOL("updateSlot"));
+	IoMap_rawAtPut(self, IOSYMBOL(":=:"), IOSYMBOL("setImmutableSlot"));
 	IoMap_rawAtPut(self, IOSYMBOL("::="), IOSYMBOL("newSlot"));
 
 	return self;
